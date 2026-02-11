@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-night-900 bg-hero text-glacier-50 font-body;
+  min-height: 100vh;
+}
+
+.glass {
+  background: linear-gradient(135deg, rgba(17, 24, 42, 0.75), rgba(10, 15, 30, 0.65));
+  border: 1px solid rgba(92, 141, 255, 0.15);
+  backdrop-filter: blur(18px);
+}
+
+.card-ring {
+  position: relative;
+}
+
+.card-ring:before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 20px;
+  background: linear-gradient(120deg, rgba(92,141,255,0.4), rgba(230,196,106,0.35));
+  opacity: 0.6;
+  z-index: -1;
+}
+
+.button-primary {
+  @apply text-night-900 font-semibold tracking-wide;
+  background: linear-gradient(135deg, #E6C46A, #CBA54B);
+  box-shadow: 0 12px 30px rgba(203, 165, 75, 0.35);
+}
+
+.button-primary:hover {
+  filter: brightness(1.05);
+}
+
+.button-secondary {
+  @apply text-glacier-50;
+  background: linear-gradient(135deg, rgba(92,141,255,0.3), rgba(92,141,255,0.1));
+  border: 1px solid rgba(92,141,255,0.35);
+}
+
+.badge-rank {
+  background: linear-gradient(120deg, rgba(230,196,106,0.2), rgba(92,141,255,0.2));
+  border: 1px solid rgba(230,196,106,0.3);
+}
