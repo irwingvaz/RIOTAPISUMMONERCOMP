@@ -19,11 +19,7 @@ const emptyPerformance = {
   multikills: { double: 0, triple: 0, quadra: 0, penta: 0 }
 };
 
-/**
- * Crunches raw match data into a structured player stat profile.
- * displayName is passed separately since the Summoner V4 endpoint
- * no longer returns a name field — we get it from the Account API instead.
- */
+// displayName comes from the Account API — Summoner V4 stopped returning names
 export function buildComparison(
   summoner: SummonerProfile,
   ranked: RankedEntry | null,
