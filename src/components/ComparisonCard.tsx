@@ -21,15 +21,19 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    // skip tilt on touch devices — matchMedia check runs client-side only
+    if (window.matchMedia("(hover: none)").matches) return;
+
     const card = cardRef.current;
     if (!card) return;
-    const rect  = card.getBoundingClientRect();
-    const cx    = rect.left + rect.width  / 2;
-    const cy    = rect.top  + rect.height / 2;
-    const dx    = (e.clientX - cx) / (rect.width  / 2);
-    const dy    = (e.clientY - cy) / (rect.height / 2);
-    const rotX  = (-dy * 7).toFixed(2);
-    const rotY  = ( dx * 7).toFixed(2);
+
+    // figure out how far the mouse is from the card center, normalize to -1..1
+    const rect = card.getBoundingClientRect();
+    const dx   = (e.clientX - (rect.left + rect.width  / 2)) / (rect.width  / 2);
+    const dy   = (e.clientY - (rect.top  + rect.height / 2)) / (rect.height / 2);
+
+    const rotX = (-dy * 7).toFixed(2);
+    const rotY = ( dx * 7).toFixed(2);
     card.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02,1.02,1.02)`;
   }
 
@@ -59,7 +63,7 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
           overflow: "hidden",
         }}
       >
-        {/* corner accent — top right */}
+        {/* top-right corner bracket */}
         <div style={{
           position: "absolute", top: 0, right: 0,
           width: "60px", height: "60px",
@@ -67,7 +71,7 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
           borderRight: "1px solid rgba(200,155,60,0.35)",
           pointerEvents: "none",
         }} />
-        {/* corner accent — bottom left */}
+        {/* bottom-left corner bracket */}
         <div style={{
           position: "absolute", bottom: 0, left: 0,
           width: "40px", height: "40px",
@@ -76,7 +80,7 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
           pointerEvents: "none",
         }} />
 
-        {/* watermark initial */}
+        {/* faint first-letter watermark behind the content */}
         <div aria-hidden="true" style={{
           position: "absolute",
           bottom: "-0.2em", right: "-0.05em",
@@ -92,20 +96,18 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
           {title.charAt(0).toUpperCase()}
         </div>
 
-        {/* header */}
+        {/* summoner name + rank badge */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
           <div>
             <p className="stat-label" style={{ marginBottom: "6px" }}>Summoner</p>
-            <h2
-              style={{
-                fontFamily: '"Cinzel Decorative", serif',
-                fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
-                color: "#F0E6D3",
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                lineHeight: 1.2,
-              }}
-            >
+            <h2 style={{
+              fontFamily: '"Cinzel Decorative", serif',
+              fontSize: "clamp(1rem, 2.5vw, 1.3rem)",
+              color: "#F0E6D3",
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              lineHeight: 1.2,
+            }}>
               {title}
             </h2>
           </div>
@@ -114,14 +116,9 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
           </span>
         </div>
 
-        {/* divider */}
-        <div style={{
-          height: "1px",
-          background: "linear-gradient(90deg, rgba(200,155,60,0.3), transparent)",
-          margin: "1.25rem 0",
-        }} />
+        <div style={{ height: "1px", background: "linear-gradient(90deg, rgba(200,155,60,0.3), transparent)", margin: "1.25rem 0" }} />
 
-        {/* main stats grid */}
+        {/* main ranked stats */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem 1rem" }}>
           <StatBlock label="LP"       value={String(data.summoner.lp)} />
           <StatBlock label="Win Rate" value={`${data.summoner.winRate}%`} />
@@ -129,19 +126,11 @@ export default function ComparisonCard({ title, data }: ComparisonCardProps) {
           <StatBlock label="Losses"   value={String(data.summoner.losses)} />
         </div>
 
-        {/* thin divider */}
-        <div style={{
-          height: "1px",
-          background: "linear-gradient(90deg, transparent, rgba(200,155,60,0.15), transparent)",
-          margin: "1.25rem 0",
-        }} />
+        <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(200,155,60,0.15), transparent)", margin: "1.25rem 0" }} />
 
-        {/* performance stats */}
+        {/* recent performance from last 10 ranked games */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem 0.75rem" }}>
-          <StatBlock
-            label="K/D/A"
-            value={`${kda.avgKills.toFixed(1)}/${kda.avgDeaths.toFixed(1)}/${kda.avgAssists.toFixed(1)}`}
-          />
+          <StatBlock label="K/D/A" value={`${kda.avgKills.toFixed(1)}/${kda.avgDeaths.toFixed(1)}/${kda.avgAssists.toFixed(1)}`} />
           <StatBlock label="KDA"    value={kda.kda.toFixed(2)} />
           <StatBlock label="Vision" value={kda.avgVisionScore.toFixed(1)} />
         </div>

@@ -32,6 +32,7 @@ export default function HomePage() {
   const [recent, setRecent]   = useState<RecentComparison[]>([]);
   const [comparing, setComparing] = useState(false);
 
+  // localStorage isn't available during SSR so we hydrate after mount
   useEffect(() => { setRecent(loadRecent()); }, []);
 
   const onCompare = () => {
@@ -43,14 +44,16 @@ export default function HomePage() {
       p2: player2.name, r2: player2.region,
       starred: false, timestamp: Date.now(),
     };
+
+    // dedupe by exact p1/p2/r1/r2 combo so the same matchup doesn't pile up
     const existing = loadRecent();
     const filtered = existing.filter(
       (r) => !(r.p1 === entry.p1 && r.p2 === entry.p2 && r.r1 === entry.r1 && r.r2 === entry.r2)
     );
-    const starred = filtered.find(
-      (r) => r.p1 === entry.p1 && r.p2 === entry.p2
-    );
-    if (starred) entry.starred = starred.starred;
+    // if they starred this matchup before, carry that over
+    const prev = existing.find((r) => r.p1 === entry.p1 && r.p2 === entry.p2);
+    if (prev) entry.starred = prev.starred;
+
     const updated = [entry, ...filtered].slice(0, 20);
     saveRecent(updated);
     setRecent(updated);
@@ -73,6 +76,7 @@ export default function HomePage() {
     router.push(`/compare?${params.toString()}`);
   };
 
+  // starred ones bubble to the top, everything else sorts by most recent
   const sorted = [...recent].sort((a, b) => {
     if (a.starred !== b.starred) return a.starred ? -1 : 1;
     return b.timestamp - a.timestamp;
@@ -80,15 +84,13 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen relative overflow-x-hidden">
-      {/* ── watermark ── */}
+      {/* big faded "RIFT" text sitting behind everything */}
       <div className="section-watermark select-none" aria-hidden="true">RIFT</div>
 
-      {/* ── hero section ── */}
       <section
         className="relative min-h-screen flex flex-col justify-center px-6 pt-20 pb-16"
         style={{ maxWidth: "100vw" }}
       >
-        {/* oversized eyebrow */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
@@ -98,18 +100,17 @@ export default function HomePage() {
           <span className="section-label">Season 2025 · Patch 15.x</span>
         </motion.div>
 
-        {/* giant hero heading — bleeds right */}
+        {/* hero heading — clamp keeps it readable on any screen size */}
         <div className="relative">
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-            className="heading-relic shimmer-text"
+            className="heading-relic shimmer-text hero-heading"
             style={{
-              fontSize: "clamp(3.5rem, 10vw, 9rem)",
+              fontSize: "clamp(2.8rem, 10vw, 9rem)",
               lineHeight: 0.95,
               marginLeft: "-0.02em",
-              whiteSpace: "nowrap",
             }}
           >
             Summoner
@@ -119,63 +120,58 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
-            className="heading-relic"
+            className="heading-relic hero-heading"
             style={{
-              fontSize: "clamp(3.5rem, 10vw, 9rem)",
+              fontSize: "clamp(2.8rem, 10vw, 9rem)",
               lineHeight: 0.95,
               color: "transparent",
               WebkitTextStroke: "1px rgba(200,155,60,0.55)",
-              marginLeft: "clamp(1rem, 6vw, 6rem)",
+              marginLeft: "clamp(0.5rem, 6vw, 6rem)",
             }}
           >
             Versus
           </motion.h1>
         </div>
 
-        {/* subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.4 }}
           style={{
             fontFamily: '"Crimson Pro", Georgia, serif',
-            fontSize: "1.2rem",
+            fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
             color: "rgba(240,230,211,0.6)",
             fontStyle: "italic",
             maxWidth: "480px",
-            marginTop: "2rem",
+            marginTop: "1.5rem",
           }}
         >
           Live head-to-head analytics. Champion pools, KDA trends, and performance radar — powered by the Riot API.
         </motion.p>
 
-        {/* diagonal gold rule */}
+        {/* animated gold line under the subtitle */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
           style={{
-            width: "clamp(200px, 40vw, 500px)",
+            width: "clamp(150px, 40vw, 500px)",
             height: "1px",
             background: "linear-gradient(90deg, rgba(200,155,60,0.6), transparent)",
-            marginTop: "2rem",
+            marginTop: "1.5rem",
             transformOrigin: "left center",
           }}
         />
 
-        {/* search form — staggered right */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-14 w-full"
+          className="mt-12 w-full"
           style={{ maxWidth: "860px" }}
         >
-          <div
-            className="relic-card"
-            style={{ borderRadius: "2px", padding: "clamp(1.5rem, 4vw, 2.5rem)" }}
-          >
-            {/* inner top accent line */}
+          <div className="relic-card" style={{ borderRadius: "2px", padding: "clamp(1.25rem, 4vw, 2.5rem)" }}>
+            {/* little gold accent line at the top of the card */}
             <div style={{
               position: "absolute", top: 0, left: "10%", right: "10%", height: "1px",
               background: "linear-gradient(90deg, transparent, rgba(200,155,60,0.4), transparent)",
@@ -183,18 +179,19 @@ export default function HomePage() {
 
             <p className="section-label" style={{ marginBottom: "1.5rem" }}>Enter Summoner Names</p>
 
+            {/* stacks to 1 col on mobile via md:grid-cols-2 */}
             <div className="grid gap-6 md:grid-cols-2">
               <PlayerSearch label="Player One" value={player1} onChange={setPlayer1} />
               <PlayerSearch label="Player Two" value={player2} onChange={setPlayer2} />
             </div>
 
-            <div style={{ marginTop: "2rem", display: "flex", alignItems: "center", gap: "1.5rem" }}>
+            <div style={{ marginTop: "2rem" }}>
               <button
                 type="button"
                 onClick={onCompare}
                 disabled={!player1.name || !player2.name || comparing}
                 className="btn-relic"
-                style={{ flex: 1, opacity: (!player1.name || !player2.name) ? 0.5 : 1 }}
+                style={{ width: "100%", opacity: (!player1.name || !player2.name) ? 0.5 : 1 }}
               >
                 <span className="pulse-ring" />
                 {comparing ? "Loading..." : "Compare Players"}
@@ -204,10 +201,8 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ── Recent Comparisons ── */}
       {sorted.length > 0 && (
         <section className="relative px-6 pb-24" style={{ maxWidth: "860px" }}>
-          {/* diagonal gold rule separator */}
           <div style={{
             height: "1px",
             background: "linear-gradient(90deg, transparent, rgba(200,155,60,0.3), transparent)",
@@ -231,13 +226,14 @@ export default function HomePage() {
                     initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.55 + i * 0.06 }}
-                    className="relic-card"
+                    className="relic-card recent-card-offset"
                     style={{
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
                       padding: "14px 20px",
                       borderRadius: "2px",
+                      // only offset on desktop — the CSS class zeroes it on mobile
                       marginLeft: i % 2 === 0 ? 0 : "clamp(0px, 2vw, 24px)",
                     }}
                   >
@@ -252,13 +248,14 @@ export default function HomePage() {
                         color: "rgba(240,230,211,0.85)",
                         background: "none",
                         border: "none",
-                        padding: 0,
+                        padding: "4px 0",
                         transition: "color 0.2s",
+                        minHeight: "44px", // 44px is the recommended min touch target size
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "#C89B3C")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(240,230,211,0.85)")}
                     >
-                      <span style={{ color: "rgba(200,155,60,0.7)", fontSize: "0.7rem", letterSpacing: "0.15em", fontFamily: '"Cinzel Decorative", serif', display: "block", marginBottom: "3px" }}>
+                      <span style={{ color: "rgba(200,155,60,0.7)", fontSize: "0.65rem", letterSpacing: "0.15em", fontFamily: '"Cinzel Decorative", serif', display: "block", marginBottom: "3px" }}>
                         {item.r1.toUpperCase()} · {item.r2.toUpperCase()}
                       </span>
                       {item.p1} <span style={{ color: "rgba(200,155,60,0.5)", margin: "0 6px" }}>vs</span> {item.p2}
@@ -269,11 +266,12 @@ export default function HomePage() {
                       title={item.starred ? "Unstar" : "Star"}
                       style={{
                         marginLeft: "12px",
-                        fontSize: "1.1rem",
+                        fontSize: "1.2rem",
                         color: item.starred ? "#C89B3C" : "rgba(200,155,60,0.3)",
                         background: "none",
                         border: "none",
-                        padding: "4px",
+                        padding: "8px",        // bigger tap zone
+                        minWidth: "44px",      // same 44px rule for touch
                         transition: "color 0.2s, transform 0.2s",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}

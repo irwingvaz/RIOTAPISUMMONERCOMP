@@ -7,21 +7,26 @@ export default function CustomCursor() {
   const trailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // touchscreens don't have a mouse so skip the whole thing
+    if (window.matchMedia("(hover: none)").matches) return;
+
     const orb   = orbRef.current;
     const trail = trailRef.current;
     if (!orb || !trail) return;
 
-    let tx = -100, ty = -100;   // trail target
-    let cx = -100, cy = -100;   // current trail pos (lerped)
+    // trail starts off screen so it doesn't flash at 0,0 on load
+    let tx = -100, ty = -100;
+    let cx = -100, cy = -100;
     let raf: number;
 
     function onMove(e: MouseEvent) {
-      const x = e.clientX, y = e.clientY;
-      orb!.style.left = `${x}px`;
-      orb!.style.top  = `${y}px`;
-      tx = x; ty = y;
+      orb!.style.left = `${e.clientX}px`;
+      orb!.style.top  = `${e.clientY}px`;
+      tx = e.clientX;
+      ty = e.clientY;
     }
 
+    // lerp makes the trail feel floaty instead of just snapping to cursor pos
     function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
     function tick() {
@@ -34,6 +39,7 @@ export default function CustomCursor() {
 
     window.addEventListener("mousemove", onMove);
     raf = requestAnimationFrame(tick);
+
     return () => {
       window.removeEventListener("mousemove", onMove);
       cancelAnimationFrame(raf);

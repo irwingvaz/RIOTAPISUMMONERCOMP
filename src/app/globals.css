@@ -19,8 +19,10 @@
 /* ── Global Reset ── */
 *, *::before, *::after { box-sizing: border-box; }
 
-/* Hide default cursor everywhere */
-html, body, a, button, input, select { cursor: none !important; }
+/* hide default cursor on non-touch devices only */
+@media (hover: hover) {
+  html, body, a, button, input, select { cursor: none !important; }
+}
 
 body {
   font-family: "Crimson Pro", Georgia, serif;
@@ -429,3 +431,81 @@ body {
 ::-webkit-scrollbar-track { background: #0A1428; }
 ::-webkit-scrollbar-thumb { background: rgba(200,155,60,0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(200,155,60,0.5); }
+
+/* hide the custom cursor on touchscreens — doesn't make sense there */
+@media (hover: none) {
+  #cursor-orb, #cursor-trail { display: none; }
+}
+
+/* player card grid — 3 columns on desktop, stacks on mobile */
+.player-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-bottom: 2.5rem;
+}
+
+/* VS panel sits between the two cards */
+.vs-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-width: 120px;
+  position: relative;
+}
+
+/* charts and champion pools go full width on small screens */
+.chart-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  margin-bottom: 2.5rem;
+}
+
+.pool-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  margin-bottom: 2.5rem;
+}
+
+.stat-mini-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 767px) {
+  /* stack cards vertically */
+  .player-compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* VS panel goes horizontal on mobile */
+  .vs-panel {
+    flex-direction: row;
+    min-width: unset;
+    padding: 0.75rem 1rem;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .vs-glyph { font-size: 2.5rem; }
+
+  /* watermark is too big on small phones */
+  .section-watermark { font-size: clamp(5rem, 40vw, 12rem); }
+
+  /* give the hero heading room to breathe on small screens */
+  .hero-heading { white-space: normal !important; }
+
+  /* recent comparisons — no diagonal offset on mobile */
+  .recent-card-offset { margin-left: 0 !important; }
+
+  /* tap targets need to be big enough on mobile */
+  .btn-relic { padding: 16px 24px; width: 100%; }
+  .btn-secondary-relic { padding: 12px 20px; }
+}
