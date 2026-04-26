@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+// updated visual design — LoL aesthetic
 const config = {
   content: ["./src/app/**/*.{ts,tsx}", "./src/components/**/*.{ts,tsx}"],
   theme: {
